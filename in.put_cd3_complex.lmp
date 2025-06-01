@@ -1,0 +1,107 @@
+###############################################
+# LAMMPS script for a CD3 Complex interacting with a membrane
+###############################################
+
+###
+# Box and units  (use real units and periodic boundaries)
+###
+units real
+atom_style bond
+boundary p p f  
+
+#loading parameters and inputfile of the starting configuration
+include parmater_file        
+read_data starting file
+
+#define outputfile for trajecotry and save the parameters
+variable dump_file string outputfile trajecotry
+variable params_file string outputfile parameters
+
+#define seed
+variable seed equal 192122543
+
+#list of parameters as in parameter input file
+#variable lj_energy equal 0.01
+#variable lj_diameter equal 5.73
+#variable lj_cutoff equal 10.12246152962189
+#variable bond_k equal 100
+#variable bond_r_0 equal 6.4   
+#variable morse_r_0 equal 50   
+#variable morse_D0 equal 5.56   
+#variable morse_alpha equal 0.017   
+#variable morse_cutoff equal 100
+#variable harmonic_cutoff equal 50
+#variable harmonic_epsilon equal 10.0
+#variable harmonic_sigma equal 0.0
+
+###
+# Pair interactions require lists of neighbours to be calculated
+###
+neighbor 4.9 bin
+neigh_modify every 1 delay 1 check yes 
+comm_modify mode single cutoff 5.0 
+
+#save parameters in parameterfile
+print "Params; seed=${seed}; lj_energy=${lj_energy}; lj_diameter=${lj_diameter}; lj_cutoff=${lj_cutoff}; bond_k=${bond_k}; bond_ro=${bond_r_0}; morse_r_o=${morse_r_0}; morse_D0=${morse_D0}; morse_alpa=${morse_alpha}; morse_cutoff=${morse_cutoff}; harmonic_cutoff=${harmonic_cutoff}; harmonic_epsilon=${harmonic_epsilon}; harmonic_sigma=${harmonic_sigma}" file ${params_file}
+
+### 
+# Reset timestep 
+###
+reset_timestep 0 
+
+###
+# Define groups 
+###
+group all type 1 2 3
+group chain type 1
+group wall type 2
+group brownian_atoms type 1 2 
+group fixed_atoms type 3
+group chain_print type 1 3
+
+###
+# Dump configurations
+###
+dump dum2 all custom 500000 ${dump_file} id type x y z ix iy iz
+# every 500000 time steps, each atom's id, type, x,y,z coords and x,y,z image flages are output.
+
+## set up interactions between bonded atoms
+bond_style   harmonic
+# For style harmonic, specify:
+#   * bond type
+#   * K (energy/distance^2) 
+#   * R0 (distance)
+bond_coeff   1   ${bond_k}   ${bond_r_0} 
+
+## Between non-bonded atoms
+pair_style lj/cut 10.12246152962189
+#  pair_coeff for LJ, specify 4:
+#    * atom type interacting with
+#    * atom type
+#    * energy
+#    * mean diameter of the two atom types
+#    * cutoff
+pair_coeff * * ${lj_energy} ${lj_diameter} ${lj_cutoff}
+
+###
+# Set up fixes
+###
+ 
+fix 1 brownian_atoms brownian 300.0 ${seed} gamma_t 1.0
+
+# set timestep of integrator
+timestep 0.1 
+
+#set force of the first unit for each chain to 0
+fix 3 fixed_atoms setforce 0.0 0.0 0.0
+
+# Morse potential wall along z-axis; harmonic wall along z-axis
+fix 8 chain wall/morse zhi EDGE ${morse_D0} ${morse_alpha} ${morse_r_0} ${morse_cutoff} units box
+fix 9 wall wall/harmonic zhi EDGE ${harmonic_epsilon} ${harmonic_sigma} ${harmonic_cutoff} units box 
+
+#run simulation
+run 2000000000
+
+#### write a final restart filey
+write_restart restart file
+
