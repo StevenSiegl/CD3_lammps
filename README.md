@@ -17,7 +17,7 @@ This repository contains 3 files:
 
 ### To run 1 complex simulations:
 
-1. Generate the initial configuration using `Create_starting_pos.py`.
+1. Generate the initial configuration using `Create_starting_pos_1complx.py`.
 2. Define the chosen file name for the initial position in the LAMMPS input script `in.put_cd3_complex.lmp` (line 14).
 3. Define the chosen file name for the parameters in `params.in`.
 4. Set output file for the trajectory in `in.put_cd3_complex.lmp` (line 17).
@@ -27,7 +27,7 @@ This repository contains 3 files:
 ### To run 5 complex simulations:
 
 - Same steps as for the 1 complex simulation.  
-- The only difference is that `Create_starting_pos.py` must be modified to generate the initial position for 5 complexes.  
+- The only difference is that instead of `Create_starting_pos_1complx.py`, `Create_starting_pos_5complx.py` must be used to generate the initial position for 5 complexes.  
 - Define the chosen file name for the initial position in the LAMMPS input script `in.put_cd3_complex.lmp` (line 14).
 
 ---
