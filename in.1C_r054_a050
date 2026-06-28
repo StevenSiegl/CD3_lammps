@@ -1,0 +1,56 @@
+###############################################
+# LAMMPS script for a CD3 Complex interacting with a membrane
+# morse_alpha = 0.050 Ang^-1, morse_r_0 = 54 Ang
+###############################################
+
+units real
+atom_style bond
+boundary p p f
+
+include params_r054_a050.in
+read_data 1C.DNA
+
+variable dump_file string out_1_cl_r054_a050
+variable params_file string out_1_params_cl_r054_a050
+
+neighbor 4.9 bin
+neigh_modify every 1 delay 1 check yes
+comm_modify mode single cutoff 12.0
+
+print "Params; seed=${seed}; lj_energy=${lj_energy}; lj_diameter=${lj_diameter}; lj_cutoff=${lj_cutoff}; bond_k=${bond_k}; bond_ro=${bond_r_0}; morse_r_o=${morse_r_0}; morse_D0=${morse_D0}; morse_alpha=${morse_alpha}; morse_cutoff=${morse_cutoff}; harmonic_cutoff=${harmonic_cutoff}; harmonic_epsilon=${harmonic_epsilon}; harmonic_sigma=${harmonic_sigma}" file ${params_file}
+
+reset_timestep 0
+
+group all type 1 2 3
+group chain type 1
+group wall type 2
+group brownian_atoms type 1 2
+group fixed_atoms type 3
+
+dump dum2 all custom 500000 ${dump_file} id type x y z ix iy iz
+
+bond_style   harmonic
+bond_coeff   1   ${bond_k}   ${bond_r_0}
+
+pair_style lj/cut ${lj_cutoff}
+pair_modify shift yes
+pair_coeff * * ${lj_energy} ${lj_diameter} ${lj_cutoff}
+special_bonds lj 0.0 0.0 1.0
+
+# Temperature 323 K to match Prakaash 2021
+fix 1 brownian_atoms brownian 323.0 ${seed} gamma_t 1.0
+
+timestep 1
+
+fix 3 fixed_atoms setforce 0.0 0.0 0.0
+
+fix 8 chain wall/morse zhi EDGE ${morse_D0} ${morse_alpha} ${morse_r_0} ${morse_cutoff} units box
+fix 9 wall wall/harmonic zhi EDGE ${harmonic_epsilon} ${harmonic_sigma} ${harmonic_cutoff} units box
+
+run 2000000000
+run 2000000000
+run 2000000000
+run 2000000000
+run 2000000000
+
+write_restart restart_r054_a050.file

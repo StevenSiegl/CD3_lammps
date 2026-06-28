@@ -1,12 +1,16 @@
 variable seed equal 19232024
-variable lj_energy equal 0.01
+variable lj_energy equal 0.3
 variable lj_diameter equal 5.73
-variable lj_cutoff equal 10.12246152962189
+variable lj_cutoff equal 6.43
 variable bond_k equal 100
-variable bond_r_0 equal 6.4   
-variable morse_r_0 equal 50   
-variable morse_D0 equal 10.0   
-variable morse_alpha equal 0.017   
+variable bond_r_0 equal 6.4
+variable morse_r_0 equal 54
+variable morse_D0 equal 9.0
+# morse_alpha = 0.050 Ang^-1
+# morse_r_0 = 54 Ang  (minimum at z = 50-54 = -4 Ang, i.e. -4 Ang below anchor)
+# Previous revision (CD3_REVISION_CL) used r_0=45 (min at z=+5, over-inserted).
+# r_0=54 shifts minimum to z=-4 Ang, matching Prakaash zeta1 CYR COM (-4.3 Ang).
+variable morse_alpha equal 0.050
 variable morse_cutoff equal 100
 variable harmonic_cutoff equal 50
 variable harmonic_epsilon equal 10.0
